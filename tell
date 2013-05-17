@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# tell
+# https://github.com/narfdotpl/tell
+#
+# Execute AppleScript in a context of an application.
+#
+# $1 - application name
+# $2 - string "to"
+# $3, $4, ... - AppleScript
+
+# validate number of arguments
+if [ $# -lt 3 ]; then
+    echo "Execute AppleScript in a context of an application."
+    echo ""
+    echo "Usage:"
+    echo ""
+    echo "    tell [Application] to [AppleScript]"
+    echo ""
+    echo "Examples:"
+    echo ""
+    echo "    tell itunes to pause"
+    echo "    tell spotify to set sound volume to 50"
+    echo "    tell spotify to play"
+    echo ""
+    exit 1
+fi
+
+# validate arguments
+if [ $2 != "to" ]; then
+    echo "\"$2\" != \"to\"."
+    exit 1
+fi
+
+# get application name and shift arguments
+app_name=$1
+shift 2  # $* is all AppleScript now
+
+# activate or execute
+if [ $# = 1 ] && [ $1 = "activate" ]; then
+    osascript -e "
+        tell application \"$app_name\" to activate
+    "
+else
+    osascript -e "
+        tell application \"System Events\"
+            if ((name of every process) contains \"$app_name\") then
+                tell application \"$app_name\" to $*
+            end if
+        end tell
+    "
+fi
